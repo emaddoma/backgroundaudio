@@ -151,31 +151,66 @@ class AudioPlayerTask extends BackgroundAudioTask {
     }
   }
 
-  void _handlePlaybackCompleted() {
+  Future<void> _handlePlaybackCompleted() async {
     print("[audiotask playback complete]");
     if (hasNext) {
+      print("advancing to next track");
       onSkipToNext();
     } else {
-      _playing = false;
+      print("queue exhausted, keeping alive");
+      _queue.removeAt(_queueIndex);
+      _queueIndex = _queue.length - 1;
+      _queue.add(MediaItem(
+        id: "https://tripchat-la-api.herokuapp.com/paused.mp3",
+        album: "Louisiana",
+        title: "Waiting...",
+        artist: "TripChat",
+        extras: {'id': 'paused', 'event': 'LOITER'}
+      ));
+      await AudioServiceBackground.setQueue(_queue);
+      onSkipToNext();
     }
   }
 
   @override
   Future<void> onAddQueueItem(MediaItem mediaItem) async {
     print("[audiotask onAddQueueItem]");
+    bool purged = false;
+    
+    if(_queue.isNotEmpty && _queueIndex > -1){
+      print("Current: ${_queue[_queueIndex].toString()}");
+    }
+
+    // If the current track is silence, remove it
+    if(_queueIndex > -1 && _queue[_queueIndex].extras['id'] == 'paused'){
+      print("REMOVING SILENCE FROM QUEUE");
+      _queue.removeAt(_queueIndex);
+      _queueIndex = _queue.length - 1;
+      purged = true;
+    }
+
     _queue.add(mediaItem);
-    AudioServiceBackground.setQueue(_queue);
+
+    await AudioServiceBackground.setQueue(_queue);
+
+    // If we purged
+    if(purged){
+      print("POST-PURGE");
+      onSkipToNext();
+    }
+
     // If this is our first track, play
     if(_queue.length == 1 && _queueIndex == -1 && (_playing == false || _playing == null)){
       print("FIRST TRACK");
       onSkipToNext();
     }
+    
     // If the item is added after playback has stopped, play 
     if(_queue.length -1 > _queueIndex && _playing == false){
       print('CONTINUE');
-      _playing = true;
       onSkipToNext();
     }
+
     super.onAddQueueItem(mediaItem);
   }
 

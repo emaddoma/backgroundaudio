@@ -173,9 +173,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       Map record = list.first;
       print("$record");
 
-      if(!AudioService.running){
-        await startAudio();
-      }
+      print('AudioService.connect()');
+      await AudioService.connect();
 
       print('AudioService.addQueueItem()');
       AudioService.addQueueItem(MediaItem(
@@ -206,6 +205,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   Future<void> startAudio() async {
     print('AudioService.start()');
+
     await AudioService.start(
       backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint,
       androidNotificationChannelName: 'Audio Service Demo',
@@ -217,11 +217,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     );
 
     print('AudioService.addQueueItem()');
-    AudioService.addQueueItem(MediaItem(
-      id: 'https://raw.githubusercontent.com/anars/blank-audio/master/5-seconds-of-silence.mp3', 
-      album: "Demo",
-      title: "Waiting for Audio...",
-      artist: "Demo",
+
+    await AudioService.addQueueItem(MediaItem(
+      id: "https://tripchat-la-api.herokuapp.com/paused.mp3",
+      album: "Louisiana",
+      title: "Waiting...",
+      artist: "TripChat",
+      extras: {'id': 'paused', 'event': 'LOITER'}
     ));
 
     return true;
