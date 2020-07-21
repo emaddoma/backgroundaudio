@@ -49,7 +49,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
   @override
   void onStart(Map<String, dynamic> params) {
-    print("[audio start]");
+    print("[audiotask start]");
 
     _playerStateSubscription = _audioPlayer.playbackStateStream
         .where((state) => state == AudioPlaybackState.completed)
@@ -152,7 +152,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
   }
 
   void _handlePlaybackCompleted() {
-    print("[audio playback complete]");
+    print("[audiotask playback complete]");
     if (hasNext) {
       onSkipToNext();
     } else {
@@ -162,7 +162,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
   @override
   Future<void> onAddQueueItem(MediaItem mediaItem) async {
-    print("onAddQueueItem");
+    print("[audiotask onAddQueueItem]");
     _queue.add(mediaItem);
     AudioServiceBackground.setQueue(_queue);
     // If this is our first track, play
@@ -181,7 +181,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
   @override
   void onPlay() {
-    print("[audio play]");
+    print("[audiotask play]");
     if (_skipState == null) {
       _playing = true;
       _audioPlayer.play();
@@ -213,7 +213,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
   @override
   void onPause() {
-    print("[audio pause]");
+    print("[audiotask pause]");
     if (_skipState == null && _playing != null && _playing == true) {
       _playing = false;
       _audioPlayer.pause();
@@ -224,7 +224,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
   @override
   Future<void> onStop() async {
-    print("[audio stop]");
+    print("[audiotask stop]");
 
     await _audioPlayer.stop();
     await _audioPlayer.dispose();

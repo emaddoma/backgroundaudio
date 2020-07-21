@@ -54,7 +54,7 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   bool geoStarted = false;
 
@@ -177,6 +177,7 @@ class _MyHomePageState extends State<MyHomePage> {
         await startAudio();
       }
 
+      print('AudioService.addQueueItem()');
       AudioService.addQueueItem(MediaItem(
         id: record['audio'],
         album: "Demo",
@@ -186,9 +187,25 @@ class _MyHomePageState extends State<MyHomePage> {
       ));
     });
 
+    WidgetsBinding.instance.addObserver(this);
+
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  didChangeAppLifecycleState(AppLifecycleState state) async {
+    super.didChangeAppLifecycleState(state);
+
+    print("didChangeAppLifecycleState: ${state.toString()}");
   }
 
   Future<void> startAudio() async {
+    print('AudioService.start()');
     await AudioService.start(
       backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint,
       androidNotificationChannelName: 'Audio Service Demo',
@@ -199,6 +216,7 @@ class _MyHomePageState extends State<MyHomePage> {
       androidEnableQueue: true,
     );
 
+    print('AudioService.addQueueItem()');
     AudioService.addQueueItem(MediaItem(
       id: 'https://raw.githubusercontent.com/anars/blank-audio/master/5-seconds-of-silence.mp3', 
       album: "Demo",
